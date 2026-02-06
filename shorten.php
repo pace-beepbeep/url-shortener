@@ -16,39 +16,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $stmt = $conn->prepare("SELECT short_code from urls WHERE long_url = ?");
-    $stmt->bind_param('s', $long_url);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $short_code = $row['short_code'];
+    $existing = supabase_request('GET', 'urls?long_url=eq.' . urlencode($long_url) . '&select=short_code');
+    if (!empty($existing) && isset($existing[0]['short_code'])) {
+        $short_code = $existing[0]['short_code'];
     } else {
-        // jika belum ada buat link pendek yang baru
+        // 2. Jika belum ada, buat kode baru dan simpan
         $short_code = buathurufrandom();
 
-        $stmt = $conn->prepare("INSERT INTO urls (long_url, short_code) VALUES (? , ?)");
-        $stmt->bind_param('ss', $long_url, $short_code);
-        $stmt->execute();
+        $data = [
+            'long_url' => $long_url,
+            'short_code' => $short_code
+        ];
+
+        // Query setara: INSERT INTO urls ...
+        $insert = supabase_request('POST', 'urls', $data);
+
+        // Cek jika ada error saat insert
+        if (isset($insert['error']) || isset($insert['message'])) {
+            // Opsional: Handle jika kode random ternyata duplikat (jarang terjadi)
+            echo json_encode(["status" => "error", "message" => "Gagal menyimpan ke database."]);
+            exit;
+        }
     }
 
-    // Kembalikan Json ke Javascript
-    // echo json_encode([
-    //     "status" => "success",
-    //     "short_url" => "http://localhost/url_shortener/" . $short_code
-    // ]);
-
+    // Persiapan output URL
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
     $domain = $_SERVER['HTTP_HOST'];
-    $path = dirname($_SERVER['PHP_SELF']); // Get the subdirectory where the script is running
-
-    // Ensure path doesn't end with a slash (unless it's just /) to avoid double slashes
+    $path = dirname($_SERVER['PHP_SELF']);
     $path = rtrim($path, '/\\');
 
     echo json_encode([
         "status" => "success",
-        // Hasilnya jadi: http://localhost/url_shortener/AbC12
         "short_url" => "$protocol://$domain$path/" . $short_code
     ]);
 }

@@ -4,18 +4,17 @@ require 'db.php';
 if (isset($_GET['code'])) {
     $code = $_GET['code'];
 
-    $stmt = $conn->prepare("SELECT long_url FROM urls WHERE short_code = ?");
-    $stmt->bind_param('s', $code);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    // Cari long_url berdasarkan short_code
+    // Query setara: SELECT long_url FROM urls WHERE short_code = '$code'
+    $result = supabase_request('GET', 'urls?short_code=eq.' . urlencode($code) . '&select=long_url');
 
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
+    if (!empty($result) && isset($result[0]['long_url'])) {
+        $long_url = $result[0]['long_url'];
 
-        // untuk redirect
-        header("Location: " . $row['long_url']);
+        // Redirect ke URL asli
+        header("Location: " . $long_url);
         exit;
     } else {
-        echo "Link Invalid";
+        echo "Link Invalid atau tidak ditemukan.";
     }
 }
