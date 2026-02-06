@@ -30,8 +30,7 @@
                 return;
             }
 
-            let formdata = new FormData();
-            formdata.append('url', url);
+            let data = { url: url };
 
             // Change button state
             let btn = document.querySelector('button');
@@ -39,9 +38,12 @@
             btn.innerText = "Shortening...";
             btn.disabled = true;
 
-            fetch ('shorten.php' , {
+            fetch ('/api/shorten', {
                 method: 'POST',
-                body: formdata
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
             })
             .then(response => response.json())
             .then(data =>{
