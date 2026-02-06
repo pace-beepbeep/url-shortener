@@ -10,22 +10,21 @@ function buathurufrandom($length = 5)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $long_url = '';
 
-    // 1. Coba baca dari JSON (untuk fetch() di index.html)
-    $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
-    if (strpos($contentType, 'application/json') !== false) {
-        $content = trim(file_get_contents("php://input"));
-        $decoded = json_decode($content, true);
-        if (is_array($decoded) && isset($decoded['url'])) {
-            $long_url = $decoded['url'];
-        }
+    // 1. Coba baca dari JSON (ini yang dikirim oleh index.html baru)
+    $json_input = file_get_contents('php://input');
+    $decoded = json_decode($json_input, true);
+
+    if (is_array($decoded) && isset($decoded['url'])) {
+        $long_url = $decoded['url'];
     }
-    // 2. Coba baca dari Form Data biasa (fallback)
+    // 2. Fallback: Coba baca dari Form Data biasa (jika pakai form submit biasa)
     elseif (isset($_POST['url'])) {
         $long_url = $_POST['url'];
     }
 
     // Validasi URL
     if (empty($long_url) || !filter_var($long_url, FILTER_VALIDATE_URL)) {
+        // Mengembalikan JSON error agar bisa ditangkap frontend
         echo json_encode(["status" => "error", "message" => "URL tidak valid atau kosong."]);
         exit;
     }
@@ -46,17 +45,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $insert = supabase_request('POST', 'urls', $data);
 
+        // Cek error dari Supabase
         if (isset($insert['error'])) {
             echo json_encode(["status" => "error", "message" => "Gagal menyimpan ke database."]);
             exit;
         }
     }
 
-    // Buat URL hasil
+    // Susun URL hasil
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
     $domain = $_SERVER['HTTP_HOST'];
 
-    // Hapus nama file script dari path agar bersih (misal: /folder/shorten.php menjadi /folder)
+    // Hapus nama file script dari path agar bersih
     $path = dirname($_SERVER['PHP_SELF']);
     $path = rtrim($path, '/\\');
 
