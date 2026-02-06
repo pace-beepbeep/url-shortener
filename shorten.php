@@ -1,26 +1,42 @@
 <?php
 require 'db.php';
 
-// fungsi huruf random
+// Fungsi Helper: Membuat kode acak
 function buathurufrandom($length = 5)
 {
     return substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $long_url = $_POST['url'];
+    $long_url = '';
 
-    //  Validasi link 
-    if (!filter_var($long_url, FILTER_VALIDATE_URL)) {
-        echo json_encode(["status" => "error", "message" => "Url Tidak Valid : "]);
+    // 1. Coba baca dari JSON (untuk fetch() di index.html)
+    $contentType = isset($_SERVER["CONTENT_TYPE"]) ? trim($_SERVER["CONTENT_TYPE"]) : '';
+    if (strpos($contentType, 'application/json') !== false) {
+        $content = trim(file_get_contents("php://input"));
+        $decoded = json_decode($content, true);
+        if (is_array($decoded) && isset($decoded['url'])) {
+            $long_url = $decoded['url'];
+        }
+    }
+    // 2. Coba baca dari Form Data biasa (fallback)
+    elseif (isset($_POST['url'])) {
+        $long_url = $_POST['url'];
+    }
+
+    // Validasi URL
+    if (empty($long_url) || !filter_var($long_url, FILTER_VALIDATE_URL)) {
+        echo json_encode(["status" => "error", "message" => "URL tidak valid atau kosong."]);
         exit;
     }
 
+    // Cek apakah URL sudah ada di Supabase
     $existing = supabase_request('GET', 'urls?long_url=eq.' . urlencode($long_url) . '&select=short_code');
+
     if (!empty($existing) && isset($existing[0]['short_code'])) {
         $short_code = $existing[0]['short_code'];
     } else {
-        // 2. Jika belum ada, buat kode baru dan simpan
+        // Jika belum ada, buat baru
         $short_code = buathurufrandom();
 
         $data = [
@@ -28,20 +44,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'short_code' => $short_code
         ];
 
-        // Query setara: INSERT INTO urls ...
         $insert = supabase_request('POST', 'urls', $data);
 
-        // Cek jika ada error saat insert
-        if (isset($insert['error']) || isset($insert['message'])) {
-            // Opsional: Handle jika kode random ternyata duplikat (jarang terjadi)
+        if (isset($insert['error'])) {
             echo json_encode(["status" => "error", "message" => "Gagal menyimpan ke database."]);
             exit;
         }
     }
 
-    // Persiapan output URL
+    // Buat URL hasil
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
     $domain = $_SERVER['HTTP_HOST'];
+
+    // Hapus nama file script dari path agar bersih (misal: /folder/shorten.php menjadi /folder)
     $path = dirname($_SERVER['PHP_SELF']);
     $path = rtrim($path, '/\\');
 
