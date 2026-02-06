@@ -1,0 +1,11 @@
+Options +FollowSymLinks -MultiViews
+RewriteEngine On
+RewriteBase /url_shortener/
+
+# Jika file yang diminta bukan folder (!-d)
+RewriteCond %{REQUEST_FILENAME} !-d
+# Jika file yang diminta bukan file nyata (!-f)
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# Arahkan format /AbC12 ke redirect.php?code=AbC12
+RewriteRule ^([a-zA-Z0-9]+)$ redirect.php?code=$1 [L,QSA]

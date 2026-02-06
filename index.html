@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener | Modern & Fast</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>🚀 URL Shortener</h2>
+
+        <div class="input-group">
+            <input type="text" id="long_url" placeholder="Paste your long link here..." autocomplete="off">
+        </div>
+        
+        <button onclick="shortenurl()">Shorten It!</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function shortenurl(){
+            let urlInput = document.getElementById('long_url');
+            let url = urlInput.value.trim();
+            let resultDiv = document.getElementById('result');
+
+            if(!url) {
+                alert("Please enter a URL first!");
+                return;
+            }
+
+            let formdata = new FormData();
+            formdata.append('url', url);
+
+            // Change button state
+            let btn = document.querySelector('button');
+            let originalText = btn.innerText;
+            btn.innerText = "Shortening...";
+            btn.disabled = true;
+
+            fetch ('shorten.php' , {
+                method: 'POST',
+                body: formdata
+            })
+            .then(response => response.json())
+            .then(data =>{
+                btn.innerText = originalText;
+                btn.disabled = false;
+
+                if (data.status === "success"){
+                    resultDiv.classList.add('show');
+                    resultDiv.innerHTML = `
+                        <p style="margin-bottom:10px; color:#555;">Your Short Link:</p>
+                        <a href="${data.short_url}" target="_blank">${data.short_url}</a>
+                    `;
+                    urlInput.value = ""; // Clear input
+                }else {
+                    alert (data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error: ', error);
+                btn.innerText = originalText;
+                btn.disabled = false;
+                alert("Something went wrong. Check console.");
+            });
+        }
+    </script>
+</body>
+</html>
