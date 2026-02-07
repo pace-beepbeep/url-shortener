@@ -4,7 +4,7 @@ export const config = {
     runtime: 'edge',
 };
 
-function generateRandomString(length = 5) {
+function generateRandomString(length = 6) {
     const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let result = '';
     for (let i = 0; i < length; i++) {
@@ -34,47 +34,39 @@ export default async function handler(req) {
     }
 
     try {
-        const { url } = await req.json();
+        const body = await req.json();
+        const url = body.url;
 
+        // Validasi URL
         if (!url) {
-            return new Response(JSON.stringify({ status: 'error', message: 'URL is required' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-            });
+            return new Response(JSON.stringify({ status: 'error', message: 'URL is required' }), { status: 400 });
         }
-
         try {
-            new URL(url); // Validate URL
+            new URL(url); // Cek format URL valid
         } catch (_) {
-             return new Response(JSON.stringify({ status: 'error', message: 'Url Tidak Valid :' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-            });
+             return new Response(JSON.stringify({ status: 'error', message: 'URL tidak valid. Pastikan pakai http:// atau https://' }), { status: 400 });
         }
 
-        // Check for existing URL
+        // 1. Cek apakah URL sudah pernah dipendekkan sebelumnya
         const existing = await supabaseRequest('GET', `urls?long_url=eq.${encodeURIComponent(url)}&select=short_code`);
         
         let shortCode;
         if (existing && existing.length > 0) {
             shortCode = existing[0].short_code;
         } else {
-            // Create new
+            // 2. Buat kode baru jika belum ada
             shortCode = generateRandomString();
             const data = { long_url: url, short_code: shortCode };
             const insert = await supabaseRequest('POST', 'urls', data);
             
             if (insert.error) {
-                 return new Response(JSON.stringify({ status: 'error', message: 'Gagal menyimpan ke database.' }), {
-                    status: 500,
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-                });
+                 return new Response(JSON.stringify({ status: 'error', message: 'Database Error' }), { status: 500 });
             }
         }
 
+        // Konstruksi Short URL
         const protocol = req.headers.get('x-forwarded-proto') || 'https';
         const host = req.headers.get('host');
-        // Since we are running in an API route /api/shorten, and the short link should be at root /, we just use origin + code
         const shortUrl = `${protocol}://${host}/${shortCode}`;
 
         return new Response(JSON.stringify({
@@ -89,9 +81,9 @@ export default async function handler(req) {
         });
 
     } catch (error) {
-        return new Response(JSON.stringify({ status: 'error', message: 'Internal Server Error' }), {
+        return new Response(JSON.stringify({ status: 'error', message: 'Internal Server Error: ' + error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+            headers: { 'Content-Type': 'application/json' },
         });
     }
 }
