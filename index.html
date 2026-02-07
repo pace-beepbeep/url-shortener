@@ -25,54 +25,53 @@
     </div>
 
     <script>
-      function shortenurl() {
+      async function shortenurl() {
         let urlInput = document.getElementById("long_url");
         let url = urlInput.value.trim();
         let resultDiv = document.getElementById("result");
+        let btn = document.querySelector("button");
 
         if (!url) {
           alert("Please enter a URL first!");
           return;
         }
 
-        let data = { url: url };
-
-        // Change button state
-        let btn = document.querySelector("button");
+        // UX: Loading state
         let originalText = btn.innerText;
         btn.innerText = "Shortening...";
         btn.disabled = true;
+        resultDiv.classList.remove("show");
 
-        fetch("shorten.php", {
-          // <--- Ganti ke nama file PHP
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            btn.innerText = originalText;
-            btn.disabled = false;
-
-            if (data.status === "success") {
-              resultDiv.classList.add("show");
-              resultDiv.innerHTML = `
-                        <p style="margin-bottom:10px; color:#555;">Your Short Link:</p>
-                        <a href="${data.short_url}" target="_blank">${data.short_url}</a>
-                    `;
-              urlInput.value = ""; // Clear input
-            } else {
-              alert(data.message);
-            }
-          })
-          .catch((error) => {
-            console.error("Error: ", error);
-            btn.innerText = originalText;
-            btn.disabled = false;
-            alert("Something went wrong. Check console.");
+        try {
+          // HIT KE API VERCEL, BUKAN PHP
+          const response = await fetch("/api/shorten", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: url }),
           });
+
+          const data = await response.json();
+
+          if (response.ok && data.status === "success") {
+            resultDiv.classList.add("show");
+            resultDiv.innerHTML = `
+                <p style="margin-bottom:10px; color:#555;">Your Short Link:</p>
+                <a href="${data.short_url}" target="_blank">${data.short_url}</a>
+            `;
+            urlInput.value = "";
+          } else {
+            alert(data.message || "Failed to shorten URL.");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Something went wrong. Please try again.");
+        } finally {
+          // Restore button
+          btn.innerText = originalText;
+          btn.disabled = false;
+        }
       }
     </script>
   </body>
