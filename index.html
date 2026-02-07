@@ -3,47 +3,195 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>URL Shortener | Modern & Fast</title>
+    <title>LinkShort - Free URL Shortener Service</title>
+    <meta
+      name="description"
+      content="Shorten your long URLs for free. Fast, reliable, and easy to use URL shortener service."
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="container">
-      <h2>🚀 URL Shortener</h2>
-
-      <div class="input-group">
-        <input
-          type="text"
-          id="long_url"
-          placeholder="Paste your long link here..."
-          autocomplete="off"
-        />
+    <!-- Header -->
+    <header class="header">
+      <div class="container-wide">
+        <nav class="navbar">
+          <div class="logo">
+            <span class="logo-icon">🔗</span>
+            <span class="logo-text">RAYurlShortener</span>
+          </div>
+          <ul class="nav-menu">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </nav>
       </div>
+    </header>
 
-      <button onclick="shortenurl()">Shorten It!</button>
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+      <div class="container-wide">
+        <div class="hero-content">
+          <h1 class="hero-title">
+            Shorten Your Links, <span class="highlight">Expand Your Reach</span>
+          </h1>
+          <p class="hero-subtitle">
+            Fast, reliable, and free URL shortening service. Make your links
+            easier to share and track.
+          </p>
+        </div>
+      </div>
+    </section>
 
-      <div id="result"></div>
-    </div>
+    <!-- Main Shortener Tool -->
+    <section class="shortener-section">
+      <div class="container">
+        <div class="shortener-card">
+          <h2 class="section-title">Create Short Link</h2>
+          <p class="section-description">
+            Paste your long URL below and get a shortened link instantly
+          </p>
+
+          <div class="input-group">
+            <input
+              type="text"
+              id="long_url"
+              placeholder="https://example.com/your-very-long-url-here"
+              autocomplete="off"
+            />
+            <button class="btn-primary" onclick="shortenurl()">
+              <span class="btn-text">Shorten URL</span>
+              <span class="btn-icon">→</span>
+            </button>
+          </div>
+
+          <div id="result"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+      <div class="container">
+        <h2 class="section-title-center">Why Choose LinkShort?</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Lightning Fast</h3>
+            <p>
+              Get your shortened links in milliseconds with our optimized
+              infrastructure
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>Secure & Reliable</h3>
+            <p>
+              Your links are safe with us. We use industry-standard security
+              practices
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Easy to Use</h3>
+            <p>
+              Simple interface that anyone can use. No registration required
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🌐</div>
+            <h3>Always Available</h3>
+            <p>
+              99.9% uptime guarantee. Your links work whenever you need them
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section
+    <section id="about" class="about">
+      <div class="container">
+        <div class="about-content">
+          <h2 class="section-title-center">About LinkShort</h2>
+          <p class="about-text">
+            LinkShort is a free URL shortening service that helps you create
+            short, memorable links from long URLs. Whether you're sharing links
+            on social media, in emails, or anywhere else, our service makes your
+            links clean and professional.
+          </p>
+        </div>
+      </div>
+    </section> -->
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="logo">
+              <span class="logo-icon">🔗</span>
+              <span class="logo-text">LinkShort</span>
+            </div>
+            <p class="footer-tagline">
+              Making the web more accessible, one link at a time.
+            </p>
+          </div>
+          <div class="footer-links">
+            <div class="footer-column">
+              <h4>Product</h4>
+              <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#home">Pricing</a></li>
+                <li><a href="#home">API</a></li>
+              </ul>
+            </div>
+            <div class="footer-column">
+              <h4>Company</h4>
+              <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#home">Blog</a></li>
+              </ul>
+            </div>
+            <div class="footer-column">
+              <h4>Legal</h4>
+              <ul>
+                <li><a href="#home">Privacy</a></li>
+                <li><a href="#home">Terms</a></li>
+                <li><a href="#home">Security</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2026 LinkShort by Rayy. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
 
     <script>
       async function shortenurl() {
         let urlInput = document.getElementById("long_url");
         let url = urlInput.value.trim();
         let resultDiv = document.getElementById("result");
-        let btn = document.querySelector("button");
+        let btn = document.querySelector(".btn-primary");
+        let btnText = btn.querySelector(".btn-text");
 
         if (!url) {
-          alert("Please enter a URL first!");
+          showNotification("Please enter a URL first!", "error");
           return;
         }
 
         // UX: Loading state
-        let originalText = btn.innerText;
-        btn.innerText = "Shortening...";
+        let originalText = btnText.innerText;
+        btnText.innerText = "Shortening...";
         btn.disabled = true;
+        btn.classList.add("loading");
         resultDiv.classList.remove("show");
 
         try {
-          // HIT KE API VERCEL, BUKAN PHP
           const response = await fetch("/api/shorten", {
             method: "POST",
             headers: {
@@ -57,22 +205,90 @@
           if (response.ok && data.status === "success") {
             resultDiv.classList.add("show");
             resultDiv.innerHTML = `
-                <p style="margin-bottom:10px; color:#555;">Your Short Link:</p>
-                <a href="${data.short_url}" target="_blank">${data.short_url}</a>
+              <div class="result-success">
+                <div class="result-label">✓ Your shortened link is ready!</div>
+                <div class="result-url-container">
+                  <input type="text" class="result-url" value="${data.short_url}" readonly id="short-url-input" />
+                  <button class="btn-copy" onclick="copyToClipboard()">
+                    <span class="copy-text">Copy</span>
+                  </button>
+                </div>
+                <a href="${data.short_url}" target="_blank" class="btn-visit">Visit Link →</a>
+              </div>
             `;
             urlInput.value = "";
+            showNotification("Link shortened successfully!", "success");
           } else {
-            alert(data.message || "Failed to shorten URL.");
+            showNotification(data.message || "Failed to shorten URL.", "error");
           }
         } catch (error) {
           console.error("Error:", error);
-          alert("Something went wrong. Please try again.");
+          showNotification("Something went wrong. Please try again.", "error");
         } finally {
-          // Restore button
-          btn.innerText = originalText;
+          btnText.innerText = originalText;
           btn.disabled = false;
+          btn.classList.remove("loading");
         }
       }
+
+      function copyToClipboard() {
+        const input = document.getElementById("short-url-input");
+        input.select();
+        input.setSelectionRange(0, 99999); // For mobile devices
+
+        navigator.clipboard
+          .writeText(input.value)
+          .then(() => {
+            const copyBtn = document.querySelector(".btn-copy .copy-text");
+            const originalText = copyBtn.innerText;
+            copyBtn.innerText = "Copied!";
+            setTimeout(() => {
+              copyBtn.innerText = originalText;
+            }, 2000);
+            showNotification("Link copied to clipboard!", "success");
+          })
+          .catch(() => {
+            document.execCommand("copy");
+            showNotification("Link copied to clipboard!", "success");
+          });
+      }
+
+      function showNotification(message, type) {
+        // Remove existing notifications
+        const existing = document.querySelector(".notification");
+        if (existing) existing.remove();
+
+        const notification = document.createElement("div");
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => notification.classList.add("show"), 10);
+        setTimeout(() => {
+          notification.classList.remove("show");
+          setTimeout(() => notification.remove(), 300);
+        }, 3000);
+      }
+
+      // Smooth scrolling for navigation links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+
+      // Enter key support
+      document
+        .getElementById("long_url")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            shortenurl();
+          }
+        });
     </script>
   </body>
 </html>
